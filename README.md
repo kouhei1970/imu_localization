@@ -16,7 +16,7 @@ IMU Localization is a Python package for estimating position and orientation usi
 Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/imu_localization.git
+git clone https://github.com/kouhei1970/imu_localization.git
 cd imu_localization
 ```
 
@@ -196,7 +196,7 @@ IMUローカライゼーションは、慣性計測装置（IMU）センサー�
 リポジトリをクローンします：
 
 ```bash
-git clone https://github.com/yourusername/imu_localization.git
+git clone https://github.com/kouhei1970/imu_localization.git
 cd imu_localization
 ```
 
