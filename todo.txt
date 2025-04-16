@@ -11,6 +11,6 @@
 - [x] code_sample_13.py - Added variable initialization and print statements
 
 ## Additional Tasks
-- [ ] Add usage instructions for each code sample
-- [ ] Update markdown file with fixed code
-- [ ] Add dependency installation instructions
+- [x] Add usage instructions for each code sample
+- [x] Update markdown file with fixed code
+- [x] Add dependency installation instructions
