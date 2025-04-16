@@ -669,7 +669,7 @@ def test_estimate_attitude():
     ax, ay, az = 0.0, 0.0, -9.81
     roll, pitch = estimate_attitude_from_accel(ax, ay, az)
     print(f"水平姿勢: roll={np.degrees(roll):.1f}°, pitch={np.degrees(pitch):.1f}°")
-    
+
     ax, ay, az = 0.0, 9.81 * np.sin(np.pi/4), -9.81 * np.cos(np.pi/4)
     roll, pitch = estimate_attitude_from_accel(ax, ay, az)
     print(f"X軸45度回転: roll={np.degrees(roll):.1f}°, pitch={np.degrees(pitch):.1f}°")
@@ -678,26 +678,26 @@ if __name__ == "__main__":
     test_estimate_attitude()
 
 # ヨー角は加速度センサーのみでは求められない
-```
 
+```
 ### 使用方法
 
 このコードは加速度センサーのデータから姿勢（ロールとピッチ角）を推定します。
 
 1. 関数をインポートします：
-   ```python
+```python
    from estimate_attitude_from_accel import estimate_attitude_from_accel
-   ```
+```
 
 2. 加速度データを使用して姿勢を推定します：
-   ```python
+```python
    # ax, ay, az: 加速度データ（m/s²）
    roll, pitch = estimate_attitude_from_accel(ax, ay, az)
-   
+
    # 角度を度に変換
    roll_deg = np.degrees(roll)
    pitch_deg = np.degrees(pitch)
-   ```
+```
 
 注意点：
 - この方法は静止状態または低加速度状態でのみ正確です
@@ -744,31 +744,31 @@ class EulerAttitudeEstimator:
 このクラスはジャイロセンサーのデータからオイラー角による姿勢推定を行います。
 
 1. クラスをインポートします：
-   ```python
+```python
    from eulerattitudeestimator import EulerAttitudeEstimator
-   ```
+```
 
 2. 推定器のインスタンスを作成します：
-   ```python
+```python
    estimator = EulerAttitudeEstimator()
-   ```
+```
 
 3. 角速度データを使用して姿勢を更新します：
-   ```python
+```python
    # wx, wy, wz: 角速度データ（rad/s）
    # dt: 時間間隔（秒）
    estimator.update(wx, wy, wz, dt)
-   
+
    # 推定された姿勢の取得
    roll = estimator.roll
    pitch = estimator.pitch
    yaw = estimator.yaw
-   
+
    # 角度を度に変換
    roll_deg = np.degrees(roll)
    pitch_deg = np.degrees(pitch)
    yaw_deg = np.degrees(yaw)
-   ```
+```
 
 注意点：
 - ジャイロセンサーのみによる姿勢推定は時間とともにドリフトが発生します
@@ -868,30 +868,30 @@ class QuaternionAttitudeEstimator:
 このクラスはジャイロセンサーのデータからクォータニオンによる姿勢推定を行います。
 
 1. クラスをインポートします：
-   ```python
+```python
    from quaternionattitudeestimator import QuaternionAttitudeEstimator
-   ```
+```
 
 2. 推定器のインスタンスを作成します：
-   ```python
+```python
    estimator = QuaternionAttitudeEstimator()
-   ```
+```
 
 3. 角速度データを使用して姿勢を更新します：
-   ```python
+```python
    # gyro: 角速度ベクトル [wx, wy, wz] (rad/s)
    # dt: 時間間隔（秒）
    gyro_vector = np.array([wx, wy, wz])
    estimator.update(gyro_vector, dt)
-   
+
    # オイラー角の取得
    roll, pitch, yaw = estimator.to_euler()
-   
+
    # 角度を度に変換
    roll_deg = np.degrees(roll)
    pitch_deg = np.degrees(pitch)
    yaw_deg = np.degrees(yaw)
-   ```
+```
 
 利点：
 - ジンバルロックが発生しない
@@ -1079,26 +1079,26 @@ class IMUPositionEstimator:
 このクラスはIMUデータを使用して位置推定を行います。
 
 1. 必要なクラスをインポートします：
-   ```python
+```python
    from imupositionestimator import IMUPositionEstimator
    from madgwickfilter import MadgwickFilter  # 姿勢推定に使用
-   ```
+```
 
 2. 位置推定器のインスタンスを作成します：
-   ```python
+```python
    estimator = IMUPositionEstimator()
-   ```
+```
 
 3. IMUデータを使用して位置を更新します：
-   ```python
+```python
    # acc: 加速度データ [ax, ay, az] (m/s²)
    # gyro: 角速度データ [wx, wy, wz] (rad/s)
    # dt: 時間間隔 (秒)
    position = estimator.update(acc, gyro, dt)
-   
+
    # 位置情報の取得
    print(f"Position: X={position[0]:.3f}m, Y={position[1]:.3f}m, Z={position[2]:.3f}m")
-   ```
+```
 
 仕組み：
 - Madgwickフィルタを使用して姿勢を推定
@@ -1342,22 +1342,22 @@ print(f"加速度ノイズ: {adev_ms2:.6f} m/s² = {adev_ug:.6f} μg")
 このコードはIMUセンサーのノイズレベルを異なる単位で表現する方法を示しています。
 
 1. 角速度ノイズの単位変換：
-   ```python
+```python
    # 角速度ノイズ [deg/s]
    adev_deg_s = 0.01
-   
+
    # deg/s から deg/h への変換
    adev_deg_h = adev_deg_s * 3600  # 3600秒 = 1時間
-   ```
+```
 
 2. 加速度ノイズの単位変換：
-   ```python
+```python
    # 加速度ノイズ [m/s²]
    adev_ms2 = 0.001
-   
+
    # m/s² から μg への変換
    adev_ug = adev_ms2 * 1e6 / 9.81  # 1g = 9.81 m/s²
-   ```
+```
 
 単位変換の目的：
 - 角速度ノイズは長時間安定性を評価する場合、deg/hで表現すると分かりやすい
@@ -1557,30 +1557,30 @@ class IMU_EKF:
 このクラスは拡張カルマンフィルタを使用してIMUデータから姿勢推定を行います。
 
 1. クラスをインポートします：
-   ```python
+```python
    from imu_ekf import IMU_EKF
-   ```
+```
 
 2. フィルタのインスタンスを作成します：
-   ```python
+```python
    ekf = IMU_EKF()
-   ```
+```
 
 3. IMUデータを使用して姿勢を更新します：
-   ```python
+```python
    # gyro: 角速度データ [wx, wy, wz] (rad/s)
    # acc: 加速度データ [ax, ay, az] (m/s²)
    # dt: 時間間隔（秒）
-   
+
    # 予測ステップ
    ekf.predict(gyro, dt)
-   
+
    # 更新ステップ
    ekf.update(acc)
-   
+
    # 磁気センサーがある場合
    # ekf.update(acc, mag)
-   ```
+```
 
 EKFの仕組み：
 - 予測ステップでジャイロデータから姿勢を予測
@@ -1647,11 +1647,11 @@ class MadgwickFilter:
         yaw = np.arctan2(2*(q0*q3 + q1*q2), 1 - 2*(q2*q2 + q3*q3))
 
         return np.array([roll, pitch, yaw])
-        
+
     def get_rotation_matrix(self) -> np.ndarray:
         """クォータニオンから回転行列を取得"""
         q0, q1, q2, q3 = self.q
-        
+
         return np.array([
             [1-2*(q2*q2+q3*q3), 2*(q1*q2-q0*q3), 2*(q1*q3+q0*q2)],
             [2*(q1*q2+q0*q3), 1-2*(q1*q1+q3*q3), 2*(q2*q3-q0*q1)],
@@ -1664,29 +1664,29 @@ class MadgwickFilter:
 このクラスはMadgwickフィルタを使用してIMUデータから姿勢推定を行います。
 
 1. クラスをインポートします：
-   ```python
+```python
    from madgwickfilter import MadgwickFilter
-   ```
+```
 
 2. フィルタのインスタンスを作成します：
-   ```python
+```python
    # 標準的なパラメータ設定
    madgwick = MadgwickFilter(beta=0.1)
-   ```
+```
 
 3. IMUデータを使用して姿勢を更新します：
-   ```python
+```python
    # gyro: 角速度データ [wx, wy, wz] (rad/s)
    # acc: 加速度データ [ax, ay, az] (m/s²)
    # dt: 時間間隔（秒）
    madgwick.update(gyro, acc, dt)
-   
+
    # オイラー角の取得
    roll, pitch, yaw = madgwick.get_euler_angles()
-   
+
    # 回転行列の取得
    R = madgwick.get_rotation_matrix()
-   ```
+```
 
 Madgwickフィルタの仕組み：
 - 勾配降下法を使用して最適な姿勢を推定
@@ -1807,7 +1807,7 @@ class ComplementaryFilter:
         roll_acc = np.arctan2(acc_normalized[1], acc_normalized[2])
         pitch_acc = np.arctan2(-acc_normalized[0],
                               np.sqrt(acc_normalized[1]**2 + acc_normalized[2]**2))
-        
+
         # ジャイロによる角度の更新
         gyro_angle = self.prev_angle + gyro * dt
 
@@ -1859,26 +1859,26 @@ class ComplementaryFilter:
 このクラスは相補フィルタを使用してIMUデータから姿勢推定を行います。
 
 1. クラスをインポートします：
-   ```python
+```python
    from complementaryfilter import ComplementaryFilter
-   ```
+```
 
 2. フィルタのインスタンスを作成します：
-   ```python
+```python
    # 基本的な相補フィルタ（カットオフ周波数0.1Hz）
    cf = ComplementaryFilter(fc=0.1, adaptive=False)
-   
+
    # 適応型相補フィルタ
    cf_adaptive = ComplementaryFilter(fc=0.1, adaptive=True)
-   ```
+```
 
 3. IMUデータを使用して姿勢を更新します：
-   ```python
+```python
    # acc: 加速度データ [ax, ay, az]
    # gyro: 角速度データ [wx, wy, wz]
    # dt: 時間間隔（秒）
    roll, pitch, yaw = cf.update(acc, gyro, dt)
-   ```
+```
 
 相補フィルタの仕組み：
 - 加速度センサーからの姿勢推定（低周波成分）とジャイロセンサーからの姿勢推定（高周波成分）を組み合わせます
