@@ -1039,34 +1039,28 @@ def main_virtual(duration: float = 10.0, dt: float = 0.1):
 
 IMUのみを使用した位置推定（IMU Dead Reckoning）は、以下の手順で実現できます：
 
-1. 姿勢推定：クォータニオンまたはEKFで姿勢を推定
-2. 重力補正：推定した姿勢を使用して加速度から重力成分を除去
-3. 二重積分：重力補正後の加速度を積分して速度と位置を推定
+1. 角速度の積分：ジャイロセンサデータから姿勢角を推定
+2. 加速度の積分：加速度センサデータから速度と位置を推定
 
-以下に実装例を示します：
+以下に単純な実装例を示します：
 
 ```python
 import numpy as np
-import collections
-from madgwickfilter import MadgwickFilter
+import math
 
-class IMUPositionEstimator:
+class SimpleIMUPositionEstimator:
     def __init__(self):
-        """Madgwickフィルタ + EKFによる位置推定器の初期化"""
+        """単純な積分による位置推定器の初期化"""
         # 状態変数の初期化
         self.position = np.zeros(3)  # [x, y, z]
         self.velocity = np.zeros(3)  # [vx, vy, vz]
-        self.attitude = MadgwickFilter()
-
-        # ノイズ除去用のパラメータ
-        self.acc_threshold = 0.05  # 加速度閾値[m/s^2]
-        self.vel_threshold = 0.02  # 速度閾値[m/s]
+        self.angles = np.zeros(3)    # [roll, pitch, yaw]
 
     def reset(self):
         """状態をリセット"""
         self.position = np.zeros(3)
         self.velocity = np.zeros(3)
-        self.attitude = MadgwickFilter()
+        self.angles = np.zeros(3)
 
     def update(self, acc: np.ndarray, gyro: np.ndarray, dt: float) -> np.ndarray:
         """IMUデータから位置を推定
@@ -1079,43 +1073,60 @@ class IMUPositionEstimator:
         Returns:
             np.ndarray: 推定位置[m] [x, y, z]
         """
-        # 1. 姿勢の更新
-        self.attitude.update(gyro, acc, dt)
+        # 1. 角速度の積分による姿勢角の更新
+        self.angles += gyro * dt
 
-        # 2. 重力補正（センサ座標系→グローバル座標系）
-        R = self.attitude.get_rotation_matrix()
+        # 2. 姿勢角からローテーション行列を計算
+        roll, pitch, yaw = self.angles
+        
+        # ロール（x軸周り）の回転行列
+        Rx = np.array([
+            [1, 0, 0],
+            [0, math.cos(roll), -math.sin(roll)],
+            [0, math.sin(roll), math.cos(roll)]
+        ])
+        
+        # ピッチ（y軸周り）の回転行列
+        Ry = np.array([
+            [math.cos(pitch), 0, math.sin(pitch)],
+            [0, 1, 0],
+            [-math.sin(pitch), 0, math.cos(pitch)]
+        ])
+        
+        # ヨー（z軸周り）の回転行列
+        Rz = np.array([
+            [math.cos(yaw), -math.sin(yaw), 0],
+            [math.sin(yaw), math.cos(yaw), 0],
+            [0, 0, 1]
+        ])
+        
+        # 合成回転行列
+        R = Rz @ Ry @ Rx
+        
+        # 3. 重力補正（センサ座標系→グローバル座標系）
         acc_global = R @ acc - np.array([0, 0, 9.81])
-
-        # 3. ノイズ除去（静止状態の検出）
-        if np.linalg.norm(acc_global) < self.acc_threshold:
-            acc_global = np.zeros(3)
-
+        
         # 4. 速度の更新（第1積分）
         self.velocity += acc_global * dt
-
-        # 5. 速度ドリフトの補正
-        if np.linalg.norm(self.velocity) < self.vel_threshold:
-            self.velocity = np.zeros(3)
-
-        # 6. 位置の更新（第2積分）
+        
+        # 5. 位置の更新（第2積分）
         self.position += self.velocity * dt
-
+        
         return self.position
 ```
 
 ### 使用方法
 
-このクラスはIMUデータを使用して位置推定を行います。
+このクラスはIMUデータを使用して単純な積分による位置推定を行います。
 
 1. 必要なクラスをインポートします：
 ```python
-   from imupositionestimator import IMUPositionEstimator
-   from madgwickfilter import MadgwickFilter  # 姿勢推定に使用
+   from simple_imu_position_estimator import SimpleIMUPositionEstimator
 ```
 
 2. 位置推定器のインスタンスを作成します：
 ```python
-   estimator = IMUPositionEstimator()
+   estimator = SimpleIMUPositionEstimator()
 ```
 
 3. IMUデータを使用して位置を更新します：
@@ -1130,15 +1141,15 @@ class IMUPositionEstimator:
 ```
 
 仕組み：
-- Madgwickフィルタを使用して姿勢を推定
-- 推定した姿勢を使用して加速度から重力成分を除去
+- 角速度の単純な積分により姿勢角を推定
+- 姿勢角から回転行列を計算して加速度から重力成分を除去
 - 加速度の二重積分により速度と位置を計算
-- 静止状態検出によるドリフト補正
 
 注意点：
-- IMUのみによる位置推定は時間とともに誤差が蓄積します
-- 長時間の使用には外部参照（GPS、ビジョンなど）との併用が推奨されます
-- 高精度なIMUセンサを使用することで精度が向上します
+- この単純な積分方式では、ジャイロのドリフトや加速度のノイズにより、短時間で大きな誤差が蓄積します
+- 特に角度のドリフトは重力補正の精度に影響し、位置推定の誤差を急速に増大させます
+- 実用的なシステムでは、この後に学ぶMadgwickフィルタやカルマンフィルタなどの高度なアルゴリズムが必要です
+- 長時間の使用には外部参照（GPS、ビジョンなど）との併用が必須となります
 
 位置推定の精度を向上させるためのポイント：
 
