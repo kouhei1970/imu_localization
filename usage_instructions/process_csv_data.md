@@ -26,8 +26,8 @@ pip install numpy pandas
 
 出力されるCSVファイルには以下の列が含まれます：
 - `timestamp`: タイムスタンプ
-- `euler_roll`, `euler_pitch`, `euler_yaw`: ジャイロセンサーから推定したオイラー角（度）
-- `accel_roll`, `accel_pitch`: 加速度センサーから推定したロールとピッチ角（度）
+- `euler_roll`, `euler_pitch`, `euler_yaw`: ジャイロセンサから推定したオイラー角（度）
+- `accel_roll`, `accel_pitch`: 加速度センサから推定したロールとピッチ角（度）
 
 ## カスタマイズ
 
