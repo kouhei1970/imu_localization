@@ -71,3 +71,7 @@ def imu_position_estimation_demo():
 
     except KeyboardInterrupt:
         print("\n処理を終了します")
+
+
+if __name__ == '__main__':
+    imu_position_estimation_demo()

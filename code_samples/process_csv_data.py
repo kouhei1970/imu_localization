@@ -1,6 +1,14 @@
 import numpy as np
-import pandas as pd
+try:
+    import pandas as pd
+except ImportError:
+    print("pandasがインストールされていません。pip install pandasでインストールしてください。")
+    import sys
+    sys.exit(1)
 from pathlib import Path
+from eulerattitudeestimator import EulerAttitudeEstimator
+from quaternionattitudeestimator import QuaternionAttitudeEstimator
+from estimate_attitude_from_accel import estimate_attitude_from_accel
 
 def process_csv_data(csv_path: Path):
     """CSVファイルからIMUデータを読み込んで処理"""
@@ -74,13 +82,5 @@ def main_csv():
     results.to_csv('attitude_estimation_results.csv', index=False)
 
 if __name__ == '__main__':
-    print("1: 仮想IMUによる実時間処理")
-    print("2: CSVファイルからのデータ処理")
-    choice = input("処理モードを選択してください (1/2): ")
-
-    if choice == '1':
-        main_virtual()
-    elif choice == '2':
-        main_csv()
-    else:
-        print("無効な選択です")
+    print("CSVファイルからのデータ処理を実行します")
+    main_csv()

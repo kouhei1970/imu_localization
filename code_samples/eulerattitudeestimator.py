@@ -1,5 +1,5 @@
 import numpy as np
-from math import sin, cos
+from math import sin, cos, tan
 
 class EulerAttitudeEstimator:
     def __init__(self):

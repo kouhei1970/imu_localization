@@ -2,6 +2,9 @@ import numpy as np
 import time
 from dataclasses import dataclass
 from typing import Tuple
+from eulerattitudeestimator import EulerAttitudeEstimator
+from quaternionattitudeestimator import QuaternionAttitudeEstimator
+from estimate_attitude_from_accel import estimate_attitude_from_accel
 
 @dataclass
 class IMUData:
@@ -75,9 +78,8 @@ def main_virtual(duration: float = 10.0, dt: float = 0.1):
             euler_estimator.update(
                 imu_data.gyro_x, imu_data.gyro_y, imu_data.gyro_z, dt
             )
-            quat_estimator.update(
-                imu_data.gyro_x, imu_data.gyro_y, imu_data.gyro_z, dt
-            )
+            gyro_vector = np.array([imu_data.gyro_x, imu_data.gyro_y, imu_data.gyro_z])
+            quat_estimator.update(gyro_vector, dt)
 
             # 加速度データによる姿勢推定
             roll, pitch = estimate_attitude_from_accel(

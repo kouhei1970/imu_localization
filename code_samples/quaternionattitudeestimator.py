@@ -1,4 +1,5 @@
 import numpy as np
+from math import atan2, asin
 
 class QuaternionAttitudeEstimator:
     def __init__(self):

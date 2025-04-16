@@ -1,6 +1,7 @@
 import numpy as np
 from typing import Tuple, List
 from dataclasses import dataclass
+import collections
 
 # -------------------------------
 # キャリブレーションの設定を格納するクラス
@@ -37,6 +38,12 @@ class IMUCalibrator:
         """
         6方向（上・下・左・右・前・後）の静止状態での加速度測定値から、
         スケール行列とバイアスを求める。
+        
+        Args:
+            static_samples: 6方向の静止状態での加速度測定値のリスト
+            
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: スケール行列とバイアスベクトル
         """
         measurements = np.array(static_samples)  # 実測値 6x3
 
@@ -70,6 +77,13 @@ class IMUCalibrator:
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
         静止時のバイアスと、既知の角速度でのスケール係数を推定。
+        
+        Args:
+            static_samples: 静止状態でのジャイロ測定値のリスト
+            rotation_samples: 回転中のジャイロ測定値と真の角速度のペアのリスト
+            
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: スケール行列とバイアスベクトル
         """
         static_data = np.array(static_samples)
         bias_vector = np.mean(static_data, axis=0)  # 静止状態の平均でバイアス推定
@@ -94,6 +108,12 @@ class IMUCalibrator:
         """
         ジャイロの値が温度によってどう変化するかを線形回帰で推定。
         temp_coef[0] は温度依存係数、temp_coef[1] はバイアス項
+        
+        Args:
+            temp_samples: ジャイロ測定値と温度のペアのリスト
+            
+        Returns:
+            np.ndarray: 温度補正係数（2x3行列）
         """
         gyro_data = np.array([s[0] for s in temp_samples])  # N x 3
         temp_data = np.array([s[1] for s in temp_samples])  # N
@@ -113,6 +133,17 @@ class IMUCalibrator:
         cal_result: CalibrationResult,    # キャリブレーション結果
         temperature: float = None         # 温度（任意）
     ) -> np.ndarray:
+        """
+        キャリブレーション結果を適用して生データを補正する
+        
+        Args:
+            raw_data: 生データ（nx6行列、加速度とジャイロ）
+            cal_result: キャリブレーション結果
+            temperature: 温度データ（オプション）
+            
+        Returns:
+            np.ndarray: キャリブレーション済みデータ
+        """
         acc_data = raw_data[:, :3]
         gyro_data = raw_data[:, 3:]
 
@@ -133,9 +164,11 @@ class IMUCalibrator:
         return np.hstack([acc_calibrated, gyro_calibrated])
 
 # ------------------------------------
-# 使用例（テスト用のダミーデータで実行）
 # ------------------------------------
 def calibration_example():
+    """
+    IMUキャリブレーターの使用例
+    """
     calibrator = IMUCalibrator()
 
     # 加速度センサの静止データ（上・下・左・右・前・後）
@@ -161,89 +194,3 @@ def calibration_example():
 # 実行例
 if __name__ == "__main__":
     calibration_example()
-if __name__ == "__main__":
-    calibration_example()
-        self,
-        temp_samples: List[Tuple[np.ndarray, float]]
-    ) -> np.ndarray:
-        """温度依存性のキャリブレーション
-
-        Args:
-            temp_samples: ジャイロ測定値と温度のペア
-
-        Returns:
-            temp_coef: 温度係数（3次元ベクトル）
-        """
-        # データの準備
-        gyro_data = np.array([sample[0] for sample in temp_samples])
-        temp_data = np.array([sample[1] for sample in temp_samples])
-
-        # 温度と出力の関係を線形回帰
-        A = np.vstack([temp_data, np.ones(len(temp_data))]).T
-        temp_coef = np.linalg.lstsq(A, gyro_data, rcond=None)[0]
-
-        return temp_coef
-
-    def apply_calibration(
-        self,
-        raw_data: np.ndarray,
-        cal_result: CalibrationResult,
-        temperature: float = None
-    ) -> np.ndarray:
-        """キャリブレーション結果を適用
-
-        Args:
-            raw_data: 生データ（nx6行列、加速度とジャイロ）
-            cal_result: キャリブレーション結果
-            temperature: 温度データ（オプション）
-
-        Returns:
-            calibrated_data: キャリブレーション済みデータ
-        """
-        # データの分離
-        acc_data = raw_data[:, :3]
-        gyro_data = raw_data[:, 3:]
-
-        # 加速度データの補正
-        acc_calibrated = np.dot(
-            acc_data - cal_result.acc_bias,
-            cal_result.acc_scale
-        )
-
-        # ジャイロデータの補正
-        gyro_calibrated = np.dot(
-            gyro_data - cal_result.gyro_bias,
-            cal_result.gyro_scale
-        )
-
-        # 温度補正（温度データがある場合）
-        if temperature is not None:
-            temp_correction = cal_result.temp_coef * temperature
-            gyro_calibrated -= temp_correction
-
-        # 結果の結合
-        return np.hstack([acc_calibrated, gyro_calibrated])
-
-# 使用例
-def calibration_example():
-    # キャリブレータの初期化
-    calibrator = IMUCalibrator()
-
-    # サンプルデータの生成（実際のデータに置き換えてください）
-    static_acc_samples = [
-        np.array([0.1, 0.2, 9.7]),   # 上向き
-        np.array([0.2, 0.1, -9.9]),  # 下向き
-        np.array([0.1, 9.8, 0.2]),   # 左向き
-        np.array([0.2, -9.7, 0.1]),  # 右向き
-        np.array([9.8, 0.1, 0.2]),   # 前向き
-        np.array([-9.9, 0.2, 0.1])   # 後向き
-    ]
-
-    # キャリブレーションの実行
-    acc_scale, acc_bias = calibrator.calibrate_accelerometer(
-        static_acc_samples
-    )
-
-    print("加速度センサーキャリブレーション結果:")
-    print(f"スケール係数:\n{acc_scale}")
-    print(f"バイアス: {acc_bias}")

@@ -51,3 +51,23 @@ class MadgwickFilter:
         yaw = np.arctan2(2*(q0*q3 + q1*q2), 1 - 2*(q2*q2 + q3*q3))
 
         return np.array([roll, pitch, yaw])
+        
+    def get_rotation_matrix(self) -> np.ndarray:
+        """クォータニオンから回転行列を取得"""
+        q0, q1, q2, q3 = self.q
+        
+        R = np.zeros((3, 3))
+        
+        R[0, 0] = 1 - 2 * (q2*q2 + q3*q3)
+        R[0, 1] = 2 * (q1*q2 - q0*q3)
+        R[0, 2] = 2 * (q1*q3 + q0*q2)
+        
+        R[1, 0] = 2 * (q1*q2 + q0*q3)
+        R[1, 1] = 1 - 2 * (q1*q1 + q3*q3)
+        R[1, 2] = 2 * (q2*q3 - q0*q1)
+        
+        R[2, 0] = 2 * (q1*q3 - q0*q2)
+        R[2, 1] = 2 * (q2*q3 + q0*q1)
+        R[2, 2] = 1 - 2 * (q1*q1 + q2*q2)
+        
+        return R

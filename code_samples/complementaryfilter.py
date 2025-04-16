@@ -1,4 +1,5 @@
 import numpy as np
+import collections
 class ComplementaryFilter:
     def __init__(self, fc=0.1, adaptive=False):  # fc: カットオフ周波数[Hz]
         self.fc = fc  # 基本のカットオフ周波数
@@ -39,8 +40,6 @@ class ComplementaryFilter:
         roll_acc = np.arctan2(acc_normalized[1], acc_normalized[2])
         pitch_acc = np.arctan2(-acc_normalized[0],
                               np.sqrt(acc_normalized[1]**2 + acc_normalized[2]**2))
-                self.prev_gyro[i] + gyro[i] - self.prev_gyro[i]
-            )
 
         # 適応フィルタリングの場合、カットオフ周波数を動的に調整
         if self.adaptive:
